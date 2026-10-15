@@ -10,7 +10,7 @@ app.set('trust proxy', 1);
 
 const corsOptions = {
     origin: [
-        'https://ivans97git.github.io',
+        'https://nanashisas.github.io',
         'http://localhost:8080',
         'http://localhost:3000'
     ],
