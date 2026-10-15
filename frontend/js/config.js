@@ -1,5 +1,5 @@
 const CONFIG = {
-    API_URL: 'https://monitoreo-hidrico-backend.onrender.com/api',
+    API_URL: 'https://monitoreo-hidrico-backend-iyoo.onrender.com/api',
     MAPA: {
         centroInicial: [-27.05, -58.68], // Las Palmas, Chaco
         zoomInicial: 13,
