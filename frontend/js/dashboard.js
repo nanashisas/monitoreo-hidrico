@@ -126,6 +126,8 @@ function crearPopup(estacion) {
         ${estacion.altura_colapso_defensa ? `<p><strong>Colapso defensa:</strong> ${estacion.altura_colapso_defensa} m</p>` : ''}
     ` : '';
 
+    const gmapsLink = `https://www.google.com/maps?q=${estacion.latitud},${estacion.longitud}`;
+
     return `
         <div class="popup-estacion">
             <h6>${estacion.nombre}</h6>
@@ -133,6 +135,9 @@ function crearPopup(estacion) {
             <p><strong>Última medición:</strong> ${valorMostrar} ${unidad} ${tendenciaHTML}</p>
             <p><strong>Fecha:</strong> ${fechaMostrar}</p>
             ${umbralesHTML}
+            <a href="${gmapsLink}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                <i class="fas fa-map-marked-alt me-1"></i> Ver en Google Maps
+            </a>
         </div>
     `;
 }
@@ -196,6 +201,9 @@ async function cargarRefugiosEnMapa() {
                         <p><strong>Ocupación:</strong> ${r.ocupacion_actual} (${ocupacion}%)</p>
                         <p><strong>Encargado:</strong> ${r.encargado || 'N/A'}</p>
                         <p><strong>Teléfono:</strong> ${r.telefono || 'N/A'}</p>
+                        <a href="https://www.google.com/maps?q=${r.latitud},${r.longitud}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                        <i class="fas fa-map-marked-alt me-1"></i> Ver en Google Maps
+                        </a>
                     </div>
                 `)
                 .bindTooltip(`<b>${r.nombre}</b><br>Ocupación: ${ocupacion}%`, {
@@ -241,13 +249,16 @@ async function cargarFamiliasEnMapa() {
                         <p><strong>Necesidad:</strong> ${f.necesidad || 'N/A'}</p>
                         <p><strong>Estado:</strong> ${f.estado}</p>
                         <button class="btn btn-sm btn-primary mt-1" onclick="verFamilia(${f.id})">Ver integrantes</button>
+                        <a href="https://www.google.com/maps?q=${f.latitud},${f.longitud}" target="_blank" class="btn btn-sm btn-outline-primary mt-1">
+                        <i class="fas fa-map-marked-alt me-1"></i> Ver en Google Maps
+                        </a>
                     </div>
                 `)
                 .bindTooltip(`<b>${f.responsable}</b><br>Prioridad: ${f.prioridad || 'N/A'} | Personas: ${f.cantidad_integrantes || 0}`, {
                     direction: 'top',
                     offset: [0, -26]
                 });
-
+            
             capaFamilias.addLayer(marcador);
             familiasMarkers[f.id] = marcador;
         });
