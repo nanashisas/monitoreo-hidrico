@@ -931,8 +931,15 @@ async function cargarRefugios() {
                                 <small>Encargado: ${r.encargado || '-'} | Tel: ${r.telefono || '-'}</small>
                             </div>
                             <div>
-                                <button class="btn btn-sm btn-outline-primary" onclick="editarRefugio(${r.id})"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="eliminarRefugio(${r.id})"><i class="fas fa-trash"></i></button>
+                                <button class="btn btn-sm btn-outline-info" onclick="verFamiliasRefugio(${r.id})" title="Ver familias alojadas">
+                                    <i class="fas fa-users"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary" onclick="editarRefugio(${r.id})" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="eliminarRefugio(${r.id})" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -954,12 +961,12 @@ async function cargarRefugios() {
             if ([...sel.options].some(o => o.value === current)) sel.value = current;
         });
 
+        // Refrescar capa del mapa
         await cargarRefugiosEnMapa();
     } catch (error) {
         console.error('Error cargando refugios:', error);
     }
 }
-
 async function cargarSelectRefugios(selectId) {
     const sel = document.getElementById(selectId);
     if (!sel) return;
@@ -1078,6 +1085,63 @@ async function verFamiliasRefugio(refugioId) {
         alert('Error: ' + error.message);
     }
 }
+
+async function verFamiliasRefugio(refugioId) {
+    try {
+        const familias = await api.getFamiliasPorRefugio(refugioId);
+        const refugio = refugiosData.find(r => r.id == refugioId);
+        const lista = document.getElementById('refugioDetalle');
+
+        if (!familias.length) {
+            lista.innerHTML = '<p class="text-muted">No hay familias alojadas en este refugio</p>';
+        } else {
+            lista.innerHTML = `
+                <h6 class="mb-3">Familias en ${refugio?.nombre || 'Refugio'}</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>N.º</th>
+                                <th>Responsable</th>
+                                <th>Teléfono</th>
+                                <th>Personas</th>
+                                <th>Prioridad</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${familias.map(f => `
+                                <tr>
+                                    <td>${f.numero_familia || '-'}</td>
+                                    <td>${f.responsable || '-'}</td>
+                                    <td>${f.telefono || '-'}</td>
+                                    <td>${f.cantidad_integrantes || 0}</td>
+                                    <td>
+                                        <span class="badge ${f.prioridad === 'ALTA' ? 'bg-danger' : (f.prioridad === 'MEDIA' ? 'bg-warning' : 'bg-secondary')}">
+                                            ${f.prioridad || '-'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge ${f.estado === 'CERRADO' ? 'bg-success' : (f.estado === 'EVACUADO' ? 'bg-info' : (f.estado === 'ASISTIDO' ? 'bg-primary' : 'bg-secondary'))}">
+                                            ${f.estado || 'PENDIENTE'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-2"><strong>Total de personas alojadas:</strong> ${familias.reduce((sum, f) => sum + (f.cantidad_integrantes || 0), 0)}</p>
+            `;
+        }
+        const modal = new bootstrap.Modal(document.getElementById('modalFamiliasRefugio'));
+        modal.show();
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+window.verFamiliasRefugio = verFamiliasRefugio;
 
 // ==================== ASISTENCIAS ====================
 async function cargarAsistencias() {
