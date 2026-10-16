@@ -21,7 +21,7 @@ async function generarExcelFamiliasBuffer(familias, estacion, tipoAlerta, valor,
 
         // Construir el enlace de WhatsApp si hay teléfono
         const enlaceWhatsApp = telefonoLimpio
-            ? `https://web.whatsapp.com/send/?phone=${telefonoLimpio}&text&type=phone_number&app_absent=0`
+            ? `https://web.whatsapp.com/send/?phone=54${telefonoLimpio}&text&type=phone_number&app_absent=0`
             : '';
 
         worksheet.addRow([
