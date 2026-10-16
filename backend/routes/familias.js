@@ -4,7 +4,7 @@ const { autenticarToken, autorizarRol } = require('../middleware/auth');
 
 const router = express.Router();
 
-// GET /api/familias
+// GET /api/familias (sin cambios)
 router.get('/', autenticarToken, async (req, res) => {
     try {
         const { refugio_id, estacion_id, estado } = req.query;
@@ -30,7 +30,7 @@ router.get('/', autenticarToken, async (req, res) => {
     }
 });
 
-// GET /api/familias/:id - con integrantes
+// GET /api/familias/:id (sin cambios)
 router.get('/:id', autenticarToken, async (req, res) => {
     try {
         const famRes = await query('SELECT * FROM familias WHERE id = $1', [req.params.id]);
@@ -45,6 +45,20 @@ router.get('/:id', autenticarToken, async (req, res) => {
         res.status(500).json({ error: 'Error al obtener familia' });
     }
 });
+
+// Función auxiliar para recalcular la ocupación de un refugio
+async function recalcularOcupacionRefugio(refugio_id) {
+    if (!refugio_id) return;
+    await query(`
+        UPDATE refugios
+        SET ocupacion_actual = (
+            SELECT COALESCE(SUM(cantidad_personas), 0)
+            FROM familias
+            WHERE refugio_id = $1 AND estado = 'EVACUADO' AND activo = true
+        )
+        WHERE id = $1
+    `, [refugio_id]);
+}
 
 // POST /api/familias
 router.post('/', autenticarToken, autorizarRol('admin', 'editor'), async (req, res) => {
@@ -67,6 +81,12 @@ router.post('/', autenticarToken, autorizarRol('admin', 'editor'), async (req, r
                 refugio_id || null, estacion_id || null, observaciones
             ]
         );
+
+        // Recalcular ocupación si aplica
+        if (refugio_id && (estado === 'EVACUADO' || estado === 'ASISTIDO')) {
+            await recalcularOcupacionRefugio(refugio_id);
+        }
+
         res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error('Error creando familia:', error);
@@ -82,6 +102,11 @@ router.put('/:id', autenticarToken, autorizarRol('admin', 'editor'), async (req,
             cantidad_personas, prioridad, necesidad, transporte, tipo_transporte,
             animales, detalle_animales, destino, estado, refugio_id, estacion_id, observaciones, activo
         } = req.body;
+
+        // Guardar refugio anterior para recalcularlo después
+        const anteriorRes = await query('SELECT refugio_id FROM familias WHERE id = $1', [req.params.id]);
+        const refugioAnterior = anteriorRes.rows[0]?.refugio_id;
+
         const result = await query(
             `UPDATE familias SET
                 numero_familia = COALESCE($1, numero_familia),
@@ -113,6 +138,16 @@ router.put('/:id', autenticarToken, autorizarRol('admin', 'editor'), async (req,
             ]
         );
         if (result.rows.length === 0) return res.status(404).json({ error: 'Familia no encontrada' });
+
+        // Recalcular ocupación del refugio anterior (si cambió de refugio)
+        if (refugioAnterior && refugioAnterior !== refugio_id) {
+            await recalcularOcupacionRefugio(refugioAnterior);
+        }
+        // Recalcular ocupación del nuevo refugio
+        if (refugio_id) {
+            await recalcularOcupacionRefugio(refugio_id);
+        }
+
         res.json(result.rows[0]);
     } catch (error) {
         console.error('Error actualizando familia:', error);
@@ -123,7 +158,13 @@ router.put('/:id', autenticarToken, autorizarRol('admin', 'editor'), async (req,
 // DELETE /api/familias/:id (soft delete)
 router.delete('/:id', autenticarToken, autorizarRol('admin'), async (req, res) => {
     try {
+        const famRes = await query('SELECT refugio_id FROM familias WHERE id = $1', [req.params.id]);
+        const refugio_id = famRes.rows[0]?.refugio_id;
+
         await query('UPDATE familias SET activo = false WHERE id = $1', [req.params.id]);
+
+        if (refugio_id) await recalcularOcupacionRefugio(refugio_id);
+
         res.json({ mensaje: 'Familia desactivada' });
     } catch (error) {
         console.error('Error eliminando familia:', error);
