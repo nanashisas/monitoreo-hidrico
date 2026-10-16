@@ -4,10 +4,10 @@ async function generarExcelFamiliasBuffer(familias, estacion, tipoAlerta, valor,
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Familias afectadas');
 
-    // Encabezados (con Teléfono)
+    // Encabezados (con WhatsApp al final)
     const headerRow = worksheet.addRow([
         'N.º Familia', 'Responsable', 'Teléfono', 'Ubicación', 'Personas', 'Prioridad',
-        'Necesidad', 'Transporte', 'Animales', 'Destino', 'Estado'
+        'Necesidad', 'Transporte', 'Animales', 'Destino', 'Estado', 'WhatsApp'
     ]);
     headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
     headerRow.eachCell((cell) => {
@@ -16,6 +16,14 @@ async function generarExcelFamiliasBuffer(familias, estacion, tipoAlerta, valor,
 
     // Filas de familias
     familias.forEach(f => {
+        // Limpiar el teléfono: solo dígitos, sin +, espacios ni guiones
+        const telefonoLimpio = (f.telefono || '').toString().replace(/\D/g, '');
+
+        // Construir el enlace de WhatsApp si hay teléfono
+        const enlaceWhatsApp = telefonoLimpio
+            ? `https://web.whatsapp.com/send/?phone=${telefonoLimpio}&text&type=phone_number&app_absent=0`
+            : '';
+
         worksheet.addRow([
             f.numero_familia || '',
             f.responsable || '',
@@ -27,19 +35,32 @@ async function generarExcelFamiliasBuffer(familias, estacion, tipoAlerta, valor,
             f.transporte ? 'SÍ' : 'NO',
             f.animales ? `SÍ${f.detalle_animales ? ' (' + f.detalle_animales + ')' : ''}` : 'NO',
             f.destino || '',
-            f.estado || ''
+            f.estado || '',
+            enlaceWhatsApp
         ]);
     });
 
-    // Información adicional a la derecha (columna M)
+    // Convertir la columna 12 (WhatsApp) en hipervínculos
+    for (let i = 2; i <= familias.length + 1; i++) {
+        const cell = worksheet.getCell(`L${i}`);
+        if (cell.value) {
+            cell.value = {
+                text: 'Abrir WhatsApp',
+                hyperlink: cell.value
+            };
+            cell.font = { color: { argb: 'FF0066CC' }, underline: true };
+        }
+    }
+
+    // Información adicional a la derecha (columna N, dejando M libre)
     const fechaTexto = fechaMedicion ? new Date(fechaMedicion).toLocaleString() : 'N/A';
     const valorTexto = (valor !== null && valor !== undefined) ? valor : 'N/A';
 
-    const titleCell = worksheet.getCell('M1');
+    const titleCell = worksheet.getCell('N1');
     titleCell.value = `ALERTA ${tipoAlerta} - Estación: ${estacion.nombre}`;
     titleCell.font = { bold: true, size: 14 };
 
-    const detailCell = worksheet.getCell('M2');
+    const detailCell = worksheet.getCell('N2');
     detailCell.value = `Fecha: ${fechaTexto} | Valor: ${valorTexto}`;
     detailCell.font = { italic: true };
 
@@ -55,7 +76,8 @@ async function generarExcelFamiliasBuffer(familias, estacion, tipoAlerta, valor,
     worksheet.getColumn(9).width = 20;   // Animales
     worksheet.getColumn(10).width = 20;  // Destino
     worksheet.getColumn(11).width = 15;  // Estado
-    worksheet.getColumn(13).width = 50;  // Info adicional
+    worksheet.getColumn(12).width = 22;  // WhatsApp
+    worksheet.getColumn(14).width = 50;  // Info adicional
 
     const buffer = await workbook.xlsx.writeBuffer();
     const filename = `alerta_${estacion.id}_${Date.now()}.xlsx`;
