@@ -61,7 +61,10 @@ class API {
     async crearFamilia(data) { return await this.request('/familias', { method: 'POST', body: JSON.stringify(data) }); }
     async actualizarFamilia(id, data) { return await this.request(`/familias/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
     async eliminarFamilia(id) { return await this.request(`/familias/${id}`, { method: 'DELETE' }); }
-
+    async getFamiliasPorRefugio(refugioId) {
+    return await this.request(`/refugios/${refugioId}/familias`);
+    }
+    
     // Personas
     async getPersonas(familiaId = null) {
         const endpoint = familiaId ? `/personas?familia_id=${familiaId}` : '/personas';
