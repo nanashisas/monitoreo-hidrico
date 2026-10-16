@@ -104,4 +104,21 @@ router.patch('/:id/ocupacion', autenticarToken, autorizarRol('admin', 'editor'),
     }
 });
 
+// GET /api/refugios/:id/familias - Familias alojadas en un refugio
+router.get('/:id/familias', autenticarToken, async (req, res) => {
+    try {
+        const result = await query(`
+            SELECT f.*,
+                (SELECT COUNT(*) FROM personas p WHERE p.familia_id = f.id AND p.activo = true) as cantidad_integrantes
+            FROM familias f
+            WHERE f.refugio_id = $1 AND f.activo = true
+            ORDER BY f.prioridad NULLS LAST, f.numero_familia
+        `, [req.params.id]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error obteniendo familias del refugio:', error);
+        res.status(500).json({ error: 'Error al obtener familias del refugio' });
+    }
+});
+
 module.exports = router;
