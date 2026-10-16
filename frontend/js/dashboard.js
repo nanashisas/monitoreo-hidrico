@@ -1032,6 +1032,52 @@ async function eliminarRefugio(id) {
         alert('Error: ' + error.message);
     }
 }
+async function verFamiliasRefugio(refugioId) {
+    try {
+        const familias = await api.getFamiliasPorRefugio(refugioId);
+        const refugio = refugiosData.find(r => r.id == refugioId);
+        const lista = document.getElementById('refugioDetalle');
+
+        if (!familias.length) {
+            lista.innerHTML = '<p class="text-muted">No hay familias alojadas en este refugio</p>';
+        } else {
+            lista.innerHTML = `
+                <h6>Familias en ${refugio?.nombre || 'Refugio'}</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>N.º</th>
+                                <th>Responsable</th>
+                                <th>Teléfono</th>
+                                <th>Personas</th>
+                                <th>Prioridad</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${familias.map(f => `
+                                <tr>
+                                    <td>${f.numero_familia || '-'}</td>
+                                    <td>${f.responsable || '-'}</td>
+                                    <td>${f.telefono || '-'}</td>
+                                    <td>${f.cantidad_integrantes || 0}</td>
+                                    <td><span class="badge ${f.prioridad === 'ALTA' ? 'bg-danger' : (f.prioridad === 'MEDIA' ? 'bg-warning' : 'bg-secondary')}">${f.prioridad || '-'}</span></td>
+                                    <td><span class="badge ${f.estado === 'CERRADO' ? 'bg-success' : (f.estado === 'EVACUADO' ? 'bg-info' : 'bg-secondary')}">${f.estado}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        // Mostrar el modal
+        const modal = new bootstrap.Modal(document.getElementById('modalFamiliasRefugio'));
+        modal.show();
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
 
 // ==================== ASISTENCIAS ====================
 async function cargarAsistencias() {
