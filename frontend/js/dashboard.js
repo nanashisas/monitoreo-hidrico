@@ -740,6 +740,18 @@ async function cargarFamilias() {
                                             <button class="btn btn-sm btn-outline-primary" onclick="editarFamilia(${f.id})"><i class="fas fa-edit"></i></button>
                                             <button class="btn btn-sm btn-outline-danger" onclick="eliminarFamilia(${f.id})"><i class="fas fa-trash"></i></button>
                                         </td>
+                                        <td>
+                                            <strong>${f.numero_familia || '-'}</strong><br>
+                                            <small>${f.responsable || ''}</small><br>
+                                            ${f.telefono ? `
+                                                <a href="https://web.whatsapp.com/send/?phone=54${(f.telefono || '').toString().replace(/\D/g, '')}&text&type=phone_number&app_absent=0" 
+                                                    target="_blank" 
+                                                    class="btn btn-sm btn-outline-success mt-1" 
+                                                    title="Enviar WhatsApp a ${f.responsable}">
+                                                        <i class="fab fa-whatsapp"></i> ${f.telefono}
+                                            </a>
+                                            ` : '<small class="text-muted">Sin teléfono</small>'}
+                                        </td>
                                     </tr>
                                 `).join('')}
                             </tbody>
