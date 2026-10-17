@@ -951,7 +951,17 @@ async function cargarRefugios() {
                                     <div class="progress-bar ${r.porcentaje_ocupacion >= 90 ? 'bg-danger' : (r.porcentaje_ocupacion >= 70 ? 'bg-warning' : 'bg-success')}"
                                          style="width: ${r.porcentaje_ocupacion}%"></div>
                                 </div>
-                                <small>Encargado: ${r.encargado || '-'} | Tel: ${r.telefono || '-'}</small>
+                                <small>
+                                    Encargado: ${r.encargado || '-'} | 
+                                    ${r.telefono ? `
+                                        <a href="https://web.whatsapp.com/send/?phone=54${(r.telefono || '').toString().replace(/\D/g, '')}&text&type=phone_number&app_absent=0" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-outline-success py-0 px-1 mt-1" 
+                                           title="Enviar WhatsApp al encargado">
+                                            <i class="fab fa-whatsapp"></i> ${r.telefono}
+                                        </a>
+                                    ` : 'Sin teléfono'}
+                                </small>
                             </div>
                             <div>
                                 <button class="btn btn-sm btn-outline-info" onclick="verFamiliasRefugio(${r.id})" title="Ver familias alojadas">
