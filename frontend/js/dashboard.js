@@ -201,16 +201,25 @@ async function cargarRefugiosEnMapa() {
                         <p><strong>Ocupación:</strong> ${r.ocupacion_actual} (${ocupacion}%)</p>
                         <p><strong>Encargado:</strong> ${r.encargado || 'N/A'}</p>
                         <p><strong>Teléfono:</strong> ${r.telefono || 'N/A'}</p>
-                        <a href="https://www.google.com/maps?q=${r.latitud},${r.longitud}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
-                        <i class="fas fa-map-marked-alt me-1"></i> Ver en Google Maps
-                        </a>
+                        <div class="d-flex gap-1 mt-2">
+                            <a href="https://www.google.com/maps?q=${r.latitud},${r.longitud}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-map-marked-alt me-1"></i> Ver en Google Maps
+                            </a>
+                            ${r.telefono ? `
+                                <a href="https://web.whatsapp.com/send/?phone=54${(r.telefono || '').toString().replace(/\D/g, '')}&text&type=phone_number&app_absent=0"
+                                   target="_blank"
+                                   class="btn btn-sm btn-success">
+                                    <i class="fab fa-whatsapp me-1"></i> WhatsApp
+                                </a>
+                            ` : ''}
+                        </div>
                     </div>
                 `)
                 .bindTooltip(`<b>${r.nombre}</b><br>Ocupación: ${ocupacion}%`, {
                     direction: 'top',
                     offset: [0, -30]
                 });
-
+            
             capaRefugios.addLayer(marcador);
             refugiosMarkers[r.id] = marcador;
         });
@@ -248,10 +257,21 @@ async function cargarFamiliasEnMapa() {
                         <p><strong>Prioridad:</strong> ${f.prioridad || 'N/A'}</p>
                         <p><strong>Necesidad:</strong> ${f.necesidad || 'N/A'}</p>
                         <p><strong>Estado:</strong> ${f.estado}</p>
-                        <button class="btn btn-sm btn-primary mt-1" onclick="verFamilia(${f.id})">Ver integrantes</button>
-                        <a href="https://www.google.com/maps?q=${f.latitud},${f.longitud}" target="_blank" class="btn btn-sm btn-outline-primary mt-1">
-                        <i class="fas fa-map-marked-alt me-1"></i> Ver en Google Maps
-                        </a>
+                        <div class="d-flex flex-wrap gap-1 mt-2">
+                            <button class="btn btn-sm btn-primary" onclick="verFamilia(${f.id})">
+                                <i class="fas fa-users me-1"></i> Ver integrantes
+                            </button>
+                            <a href="https://www.google.com/maps?q=${f.latitud},${f.longitud}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-map-marked-alt me-1"></i> Maps
+                            </a>
+                            ${f.telefono ? `
+                                <a href="https://web.whatsapp.com/send/?phone=54${(f.telefono || '').toString().replace(/\D/g, '')}&text&type=phone_number&app_absent=0"
+                                   target="_blank"
+                                   class="btn btn-sm btn-success">
+                                    <i class="fab fa-whatsapp me-1"></i> WhatsApp
+                                </a>
+                            ` : ''}
+                        </div>
                     </div>
                 `)
                 .bindTooltip(`<b>${f.responsable}</b><br>Prioridad: ${f.prioridad || 'N/A'} | Personas: ${f.cantidad_integrantes || 0}`, {
