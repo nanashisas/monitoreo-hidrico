@@ -225,6 +225,15 @@ body {
     margin-left: 5px;
 }
 
+.leaflet-popup-content {
+    min-width: 250px;
+}
+
+.leaflet-popup-content .btn-sm {
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
 /* ========== ANIMACIÓN ALERTAS EN MAPA ========== */
 @keyframes pulse {
     0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
