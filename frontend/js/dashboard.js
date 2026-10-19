@@ -448,7 +448,9 @@ async function registrarMedicion(e) {
     const tipo_medicion = document.getElementById('selectTipo').value;
     const valor = parseFloat(document.getElementById('inputValor').value);
     const observaciones = document.getElementById('inputObservaciones').value;
-    const fecha_hora = document.getElementById('inputFechaHora').value || new Date().toISOString();
+    const fecha_hora = document.getElementById('inputFechaHora').value 
+        ? new Date(document.getElementById('inputFechaHora').value).toISOString() 
+        : new Date().toISOString();
     const porcentaje_reservorio = parseFloat(document.getElementById('inputReservorio').value) || null;
 
     if (!estacion_id || !tipo_medicion || isNaN(valor)) {
@@ -540,7 +542,7 @@ async function cargarMediciones() {
                     <tbody>
                         ${mediciones.map(m => `
                             <tr>
-                                <td>${new Date(m.fecha_hora).toLocaleString()}</td>
+                                <td>${new Date(m.fecha_hora).toLocaleString('es-AR')}</td>
                                 <td>${m.nombre_estacion || 'N/A'}</td>
                                 <td>${m.tipo_medicion === 'nivel_rio' ? 'Río' : 'Lluvia'}</td>
                                 <td>${m.valor}</td>
